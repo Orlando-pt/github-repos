@@ -1,0 +1,1 @@
+- talk about the .env file

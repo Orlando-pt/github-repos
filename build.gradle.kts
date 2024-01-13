@@ -25,6 +25,12 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+//    // https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-openfeign
+//    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+
+    // https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-openfeign
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.1.0")
 }
 
 tasks.withType<KotlinCompile> {
