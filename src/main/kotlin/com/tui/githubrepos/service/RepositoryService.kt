@@ -2,22 +2,44 @@ package com.tui.githubrepos.service
 
 import com.tui.githubrepos.dto.Repository
 import com.tui.githubrepos.httpclient.GithubClient
+import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Service
 
+/**
+ * Service to get information on GitHub repositories
+ */
 @Service
 class RepositoryService(
     private val githubClient: GithubClient
 ) {
-    fun getAllRepositories(): List<Repository> {
-        val repositories = githubClient.getAllRepositories("Orlando-pt")
-        repositories
-            .filter { !it.fork }
-            .forEach { repository ->
-                repository.branches = githubClient.getAllRepositoryBranches(
-                    repository.owner.login,
-                    repository.name
-                )
+    /**
+     * Get all user repositories
+     * @param username GitHub username
+     * @return List of repositories
+     */
+    suspend fun getAllRepositories(username: String): List<Repository> {
+        val createdRepositories = githubClient
+            .getAllRepositories(username)
+            .filter {
+                !it.fork
             }
-        return repositories
+            .flatMap { repository ->
+                githubClient
+                    .getAllRepositoryBranches(
+                        repository.owner.login,
+                        repository.name
+                    )
+                    .collectList()
+                    .map {
+                        repository.branches = it
+                        repository
+                    }
+            }
+            .collectList()
+            .awaitSingle()
+            .orEmpty()
+
+        return createdRepositories
+
     }
 }

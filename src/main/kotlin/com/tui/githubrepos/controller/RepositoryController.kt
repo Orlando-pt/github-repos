@@ -3,18 +3,28 @@ package com.tui.githubrepos.controller
 import com.tui.githubrepos.dto.Repository
 import com.tui.githubrepos.service.RepositoryService
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+/**
+ * Controller to get information on GitHub repositories
+ */
 @RestController
 @RequestMapping("/repository")
 class RepositoryController(
     private val repositoryService: RepositoryService
 ) {
 
-    //    @GetMapping(consumes = ["application/json"], produces = ["application/json"])
-    @GetMapping(produces = ["application/json"])
-    fun getAllRepositories(): List<Repository> {
-        return repositoryService.getAllRepositories()
+    /**
+     * Get all user repositories
+     * @param username GitHub username
+     * @return List of repositories
+     */
+    @GetMapping("/{username}", produces = ["application/json"])
+    suspend fun getAllRepositories(
+        @PathVariable username: String
+    ): List<Repository> {
+        return repositoryService.getAllRepositories(username)
     }
 }
