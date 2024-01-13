@@ -6,6 +6,7 @@ plugins {
     id("org.graalvm.buildtools.native") version "0.9.28"
     kotlin("jvm") version "1.9.21"
     kotlin("plugin.spring") version "1.9.21"
+    id("org.springdoc.openapi-gradle-plugin") version "1.8.0"
 }
 
 group = "com.tui"
@@ -25,6 +26,13 @@ dependencies {
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+
+    // Swagger
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.3.0")
+    // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webflux-api
+    testImplementation("org.springdoc:springdoc-openapi-starter-webflux-api:2.3.0")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
 }
