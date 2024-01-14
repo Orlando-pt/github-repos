@@ -1,3 +1,12 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 github:
   url: https://api.github.com
   token: ${GITHUB_TOKEN}

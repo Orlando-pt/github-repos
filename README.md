@@ -11,3 +11,4 @@ TODO:
 
 - custom error handling for not acceptable media type
 - add more information in the controller for swagger
+- add native image support

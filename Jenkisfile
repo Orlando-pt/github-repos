@@ -1,0 +1,29 @@
+pipeline{
+    agent any
+
+    environment{
+        GITHUB_TOKEN = credentials('githubToken')
+    }
+
+    tools{
+        jdk 'java-21'
+    }
+
+    stages{
+        stage('Build'){
+            steps{
+                 sh 'echo $GITHUB_TOKEN'
+            }
+        }
+        stage('Test'){
+            steps{
+                echo 'Testing...'
+            }
+        }
+        stage('Deploy'){
+            steps{
+                echo 'Deploying...'
+            }
+        }
+    }
+}
