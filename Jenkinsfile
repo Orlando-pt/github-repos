@@ -9,6 +9,7 @@ pipeline{
         stage('Build'){
             steps{
                  sh 'echo $GITHUB_TOKEN'
+                sh './gradlew build'
             }
         }
         stage('Test'){
