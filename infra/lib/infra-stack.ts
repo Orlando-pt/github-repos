@@ -1,6 +1,5 @@
 import * as cdk from "aws-cdk-lib";
-import { HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
-import { HttpAlbIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import { HttpIntegration, RestApi } from "aws-cdk-lib/aws-apigateway";
 import { Vpc } from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns";
@@ -53,8 +52,8 @@ export class InfraStack extends cdk.Stack {
             ),
           },
         },
-        // assignPublicIp: false,
-        // publicLoadBalancer: false,
+        assignPublicIp: true,
+        publicLoadBalancer: true,
       }
     );
 
@@ -66,29 +65,55 @@ export class InfraStack extends cdk.Stack {
       healthyThresholdCount: 3,
     });
 
-    // Api Gateway
-    const apiGateway = new HttpApi(this, "GithubReposApi", {
-      apiName: "GithubReposApi",
-      createDefaultStage: true,
+    new cdk.CfnOutput(this, "GithubReposAppUrl", {
+      value: sbApp.listener.loadBalancer.loadBalancerDnsName,
     });
 
-    // Api Gateway Integration
-    apiGateway.addRoutes({
-      path: "/",
-      methods: [HttpMethod.ANY],
-      integration: new HttpAlbIntegration(
-        "GithubReposApiIntegration",
-        sbApp.listener,
-        {
-          method: HttpMethod.ANY,
-        }
-      ),
+    // create Http Api Gateway
+    const api = new RestApi(this, "GithubReposApi", {
+      restApiName: "GithubReposApi",
     });
+
+    const lbDns = sbApp.listener.loadBalancer.loadBalancerDnsName;
+    api.root.addProxy({
+      anyMethod: true,
+      defaultIntegration: new HttpIntegration(`http://${lbDns}`, {
+        proxy: true,
+        httpMethod: "ANY",
+      }),
+    });
+
+    const repository = api.root
+      .addResource("repository")
+      .addResource("{username}");
+
+    const prefetch = repository.addResource("prefetch");
+    prefetch.addMethod(
+      "GET",
+      new HttpIntegration(`http://${lbDns}/repository/Orlando-pt`)
+    );
+
+    const b = api.root.addResource("b").addProxy({
+      defaultIntegration: new HttpIntegration(`http://${lbDns}/repository/`),
+    });
+
+    repository.addMethod(
+      "GET",
+      new HttpIntegration(`http://${lbDns}/repository/{username}`)
+    );
 
     // Output
     new cdk.CfnOutput(this, "GithubReposApiUrl", {
-      value: apiGateway.url!,
+      value: api.url!,
     });
+
+    // Add Rest Api Gateway
+    // const api = new RestApi(this, "GithubReposApi", {
+    //   restApiName: "GithubReposApi",
+    // });
+
+    // // Add Resource
+    // const githubRepos = api.root.addResource("/");
 
     // Connect Api Gateway to ALB
     // const apiGateway = new HttpApi(this, "GithubReposApi", {

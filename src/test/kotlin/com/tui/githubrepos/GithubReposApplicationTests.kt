@@ -9,5 +9,4 @@ class GithubReposApplicationTests {
     @Test
     fun contextLoads() {
     }
-
 }
