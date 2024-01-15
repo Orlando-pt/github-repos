@@ -5,10 +5,6 @@ pipeline{
         GITHUB_TOKEN = credentials('githubToken')
     }
 
-    tools{
-        jdk 'java-21'
-    }
-
     stages{
         stage('Build'){
             steps{
