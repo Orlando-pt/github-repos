@@ -5,21 +5,31 @@ pipeline{
         GITHUB_TOKEN = credentials('githubToken')
     }
 
+    tools {
+        jdk "21.0.1"
+    }
+
     stages{
         stage('Build'){
             steps{
-                 sh 'echo $GITHUB_TOKEN'
                 sh './gradlew build'
             }
         }
-        stage('Test'){
+        stage('Unit Testing'){
             steps{
-                echo 'Testing...'
+                sh './gradlew test'
             }
         }
+        stage('Integration Testing'){
+            steps{
+                echo 'Testing integrations'
+            }
+        }
+        // At this stage we could also use sonarqube to verify quality criteria
+        // But for this exercise we'll keep it simple
         stage('Deploy'){
             steps{
-                echo 'Deploying...'
+                sh 'cd infra && ls'
             }
         }
     }
