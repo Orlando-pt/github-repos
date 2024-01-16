@@ -8,7 +8,7 @@ pipeline{
     stages{
         stage('Build'){
             steps{
-                sh './gradlew build'
+                sh './gradlew build -x test'
             }
         }
         stage('Unit Testing'){
@@ -23,7 +23,10 @@ pipeline{
         // Maybe generate swagger file to make a custom API Gateway
         stage('Deploy'){
             steps{
-                sh 'cd infra && npm run deploy'
+                dir('infra'){
+                    sh 'npm install'
+                    sh 'npx cdk deploy --require-approval never'
+                }
             }
         }
     }

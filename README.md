@@ -6,10 +6,10 @@ Hi! In this file you will find the most important information about the challeng
 
 I choose to use [Spring Webflux](https://www.baeldung.com/spring-webflux) and kotlin to implement this challenge. I
 created the Dockerfile
-to build the docker image that is then sent to the AWS ECR to be used by the ECS service.
+to build the docker image, sending it to the AWS ECR to be used by the ECS.
 The [Jenkinsfile](./Jenkinsfile) contains the description of the pipeline used to build, test and deploy
 the application to AWS. Note: I had Jenkins in an ec2 instance, but I had to forget about that
-because the instance didn't have enough memory to build the project, so I just installed locally.
+because the instance didn't had enough memory to build the project, so I just installed locally.
 
 ## Application Development
 
@@ -21,7 +21,7 @@ where we define the endpoint and pass the request to the service layer. The
 responsible for calling a GitHub client wrapper(
 [GithubClient.kt](./src/main/kotlin/com/tui/githubrepos/httpclient/GithubClient.kt)
 ) that will call the GitHub API and retrieve the data. Webflux allows us to do this in a non-blocking
-way, so we can have a better performance.
+way, so we can have better performance.
 
 To run the application locally, have in mind that you need to have a **GITHUB_TOKEN** to be able to
 call the GitHub API. I had a **.env.local** file with the environment variables.
@@ -48,7 +48,7 @@ reason it was not compiling. Either way, the idea is in the file
 The premise of the tests was created, it lacks the implementation.
 
 Normally I have two different *gradle tasks* to run the tests, one for unit tests and another for
-integration tests. But this time, to simplify (and to have less work), it's only one task.
+integration tests. But this time, to simplify, it's only one task.
 
 ```shell
 $ ./gradlew test
@@ -71,16 +71,19 @@ In the case of the client trying to request data in *XML* format, I handled it b
 endpoint to produce only *JSON* responses.
 
 ```kotlin
-@GetMapping("/{username}", produces = ["application/json"])
+@GetMapping("/{username}", produces = [MediaType.APPLICATION_JSON_VALUE])
 ```
 
-The problem with this approach is that is harder to customize the response. So hard, that I was
-not able to do it. We have limited time to complete the challenge, so I decided that the following
+In reality, *Spring Webflux* doesn't support *XML* responses natively, there is some workarounds
+as we can see in the
+following [link](https://stackoverflow.com/questions/55306194/springboot-webflux-cannot-return-application-xml).
+The problem with these workarounds is that they are not intuitive, and when I implemented them they simply didn't work.
+We have limited time to complete the challenge, so I decided that the following
 message was okay enough. I know the implications of having different formatted responses,
 specially for the ones consuming the API, it's not good, and I would never deliver it like this.
 
 ```shell
-$ curl -H "Accept: application/xml"  localhost:8080/repository/JohnDoe
+$ curl -H "Accept: application/xml"  http://github-githu-figog1abfakw-1126930585.eu-central-1.elb.amazonaws.com/api/repository/JohnDoe
 ```
 
 ```json
@@ -113,7 +116,7 @@ This automatic generation can be useful later if we want to customize the **API 
 With the swagger file we know exactly which endpoints we have and what are the expected responses.
 
 Swagger also has a **UI** component that we can find in the following
-[link](http://github-githu-shcwhxi9z00i-2041545886.eu-central-1.elb.amazonaws.com/webjars/swagger-ui/index.html).
+[link](http://github-githu-figog1abfakw-1126930585.eu-central-1.elb.amazonaws.com/api/webjars/swagger-ui/index.html).
 It's also generated automatically when running the application.
 
 ---
@@ -186,10 +189,14 @@ And then the Fargate service with the ALB.
 );
 ```
 
+[//]: # (TODO: remove the publicLoadBalancer)
+
 Lastly, I just created the Rest Api Gateway to connect to the ALB and expose the application.
 
 ```typescript
-const bla = "ola";
+const foobar = "Still in progress";
+const barfoo = "It is taking a little longer than expected, but it will be ready soon.";
+const last = "Maybe you will not even see this message, I hope you don't :)"
 ```
 
 ## Jenkins
@@ -202,7 +209,7 @@ Starting by building the application.
 ```groovy
 stage('Build') {
     steps {
-        sh './gradlew build'
+        sh './gradlew build -x test'
     }
 }
 ```
@@ -225,8 +232,9 @@ application to AWS.
 
 ```groovy
 stage('Deploy') {
-    steps {
-        sh 'cd infra && ls'
+    dir('infra') {
+        sh 'npm install'
+        sh 'npx cdk deploy --require-approval never'
     }
 }
 ```
@@ -239,4 +247,4 @@ and use it to customize the API Gateway.
 I had a lot of fun doing this challenge. I hope it causes good impressions, and if it doesn't, I
 appreciate the opportunity to do it. Bye, enjoy the rest of your day, and the rest of your life.
 
-- change localhost to deployment url TODO
+[//]: # (change localhost to deployment url TODO)

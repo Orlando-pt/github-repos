@@ -17,7 +17,7 @@ class RepositoryControllerTest {
     fun `Should get list of repositories when user has any`() {
         val username = "Orlando-pt"
         val result = testRestTemplate.getForObject(
-            "/repository/$username",
+            "/api/repository/$username",
             Array<Repository>::class.java
         )
 

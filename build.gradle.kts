@@ -51,6 +51,6 @@ tasks.withType<Test> {
 
 // generate swagger file
 openApi {
-    apiDocsUrl.set("http://localhost:8080/v3/api-docs.yaml")
+    apiDocsUrl.set("http://localhost:8080/api/v3/api-docs.yaml")
     outputFileName.set("swagger.yaml")
 }
