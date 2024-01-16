@@ -4,7 +4,8 @@ Hi! In this file you will find the most important information about the challeng
 
 ## Chosen technologies
 
-I choose to use [Spring Webflux](https://www.baeldung.com/spring-webflux) and kotlin to implement this challenge. I
+I choose to use [Spring Webflux](https://www.baeldung.com/spring-webflux), which provides reactive programming support
+for web applications, and kotlin to implement this challenge. I
 created the Dockerfile
 to build the docker image, sending it to the AWS ECR to be used by the ECS.
 The [Jenkinsfile](./Jenkinsfile) contains the description of the pipeline used to build, test and deploy
