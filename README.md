@@ -1,6 +1,9 @@
 # TUI Challenge
 
 Hi! In this file you will find the most important information about the challenge resolution.
+You can also check the challenge solution in the following link:
+
+https://jiy9lg7dm8.execute-api.eu-central-1.amazonaws.com/prod/api/repository/ThePrimeagen
 
 ## Chosen technologies
 
@@ -84,7 +87,7 @@ message was okay enough. I know the implications of having different formatted r
 specially for the ones consuming the API, it's not good, and I would never deliver it like this.
 
 ```shell
-$ curl -H "Accept: application/xml"  http://github-githu-figog1abfakw-1126930585.eu-central-1.elb.amazonaws.com/api/repository/JohnDoe
+$ curl -H "Accept: application/xml" https://jiy9lg7dm8.execute-api.eu-central-1.amazonaws.com/prod/api/repository/JohnDoe
 ```
 
 ```json
@@ -117,7 +120,7 @@ This automatic generation can be useful later if we want to customize the **API 
 With the swagger file we know exactly which endpoints we have and what are the expected responses.
 
 Swagger also has a **UI** component that we can find in the following
-[link](http://github-githu-figog1abfakw-1126930585.eu-central-1.elb.amazonaws.com/api/webjars/swagger-ui/index.html).
+[link](http://github-githu-ue6exdlr2eyb-773707930.eu-central-1.elb.amazonaws.com/api/webjars/swagger-ui/index.html).
 It's also generated automatically when running the application.
 
 ---
@@ -127,9 +130,8 @@ It's also generated automatically when running the application.
 The [Dockerfile](./Dockerfile) is very simple, it just copies the **jar** file and runs it. I also
 added comments to explain what we could do if we wanted also to build the jar. There is also the
 option of creating a native image, that basically uses [GraalVM](https://www.graalvm.org/) to
-compile the application to a native image, but it was a little of the context (and I'm not sure if
-it works seamlessly with Spring Webflux). I decided to only copy the jar and not build it because
-we have the **Jenkins pipeline** for that.
+compile the application to a native image, but it was a little out of the context. I decided to only copy the jar and
+not build it because we have the **Jenkins pipeline** for that.
 
 Locally, we can run and build the docker image with the following commands:
 
@@ -142,7 +144,7 @@ $ docker run --env-file .env.local.docker -p 8090:8080 --name github-app github-
 
 I used the [AWS CDK](https://aws.amazon.com/cdk/) to create the infrastructure. It's a framework
 that allows to create the infrastructure using code, in the end it generates a **CloudFormation**
-template. It is a very simple way to create and manage the resource in AWS as you can see in the
+template. It is a very simple way to create and manage resources in AWS as you can see in the
 stack file [infra-stack.ts](./infra/lib/infra-stack.ts).
 
 I started by creating the VPC.
@@ -195,9 +197,36 @@ And then the Fargate service with the ALB.
 Lastly, I just created the Rest Api Gateway to connect to the ALB and expose the application.
 
 ```typescript
-const foobar = "Still in progress";
-const barfoo = "It is taking a little longer than expected, but it will be ready soon.";
-const last = "Maybe you will not even see this message, I hope you don't :)"
+const api = new RestApi(this, "GithubReposApi", {
+    restApiName: "GithubReposApi",
+});
+
+const apiGithub = api.root.addResource("api");
+const proxyResource = new ProxyResource(this, "DELGithubReposProxy", {
+    parent: apiGithub,
+    anyMethod: false,
+});
+
+proxyResource.addMethod(
+    "GET",
+    new HttpIntegration(
+        `http://${sbApp.loadBalancer.loadBalancerDnsName}/api/{proxy}`,
+        {
+            proxy: true,
+            httpMethod: "GET",
+            options: {
+                requestParameters: {
+                    "integration.request.path.proxy": "method.request.path.proxy",
+                },
+            },
+        }
+    ),
+    {
+        requestParameters: {
+            "method.request.path.proxy": true,
+        },
+    }
+);
 ```
 
 ## Jenkins
@@ -216,7 +245,7 @@ stage('Build') {
 ```
 
 Then, we run the tests. If I didn't have cheated with the tests, I would have two different tasks
-to run the unit and integration tests.
+to run, unit and integration tests.
 
 ```groovy
 stage('Test') {
@@ -228,7 +257,7 @@ stage('Test') {
 
 After tests, it's usually a good idea to
 use [SonarQube](https://www.sonarsource.com/products/sonarqube/downloads/lts/8-9-lts/) to analyze the
-code for bugs, vulnerabilities, smells, coverage, etc. But I didn't do it, instead I deployed the
+code for bugs, vulnerabilities, smells, coverage, etc. I delayed that to another time, instead I deployed the
 application to AWS.
 
 ```groovy
