@@ -1,4 +1,4 @@
-# Tui Challenge
+# TUI Challenge
 
 Hi! In this file you will find the most important information about the challenge resolution.
 
@@ -10,7 +10,7 @@ created the Dockerfile
 to build the docker image, sending it to the AWS ECR to be used by the ECS.
 The [Jenkinsfile](./Jenkinsfile) contains the description of the pipeline used to build, test and deploy
 the application to AWS. Note: I had Jenkins in an ec2 instance, but I had to forget about that
-because the instance didn't had enough memory to build the project, so I just installed locally.
+because the instance didn't have enough memory to build the project, so I just installed locally.
 
 ## Application Development
 
@@ -246,6 +246,6 @@ and use it to customize the API Gateway.
 ## Final considerations
 
 I had a lot of fun doing this challenge. I hope it causes good impressions, and if it doesn't, I
-appreciate the opportunity to do it. Bye, enjoy the rest of your day, and the rest of your life.
+appreciate the opportunity to do it. Bye, have a good day!
 
 [//]: # (change localhost to deployment url TODO)

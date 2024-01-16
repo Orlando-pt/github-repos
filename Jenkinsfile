@@ -2,7 +2,14 @@ pipeline{
     agent any
 
     environment{
-        GITHUB_TOKEN = credentials('githubToken')
+        GITHUB_TOKEN            = credentials('githubToken')
+        AWS_ACCESS_KEY_ID       = credentials('awsAccessKey')
+        AWS_SECRET_ACCESS_KEY   = credentials('awsSecretKey')
+        AWS_DEFAULT_REGION      = 'eu-central-1'
+    }
+
+    tools {
+        nodejs "node-20"
     }
 
     stages{

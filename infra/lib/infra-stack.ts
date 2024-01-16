@@ -1,4 +1,9 @@
 import * as cdk from "aws-cdk-lib";
+import {
+  HttpIntegration,
+  ProxyResource,
+  RestApi,
+} from "aws-cdk-lib/aws-apigateway";
 import { Vpc } from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns";
@@ -65,5 +70,39 @@ export class InfraStack extends cdk.Stack {
     });
 
     // API Gateway
+    const api = new RestApi(this, "GithubReposApi", {
+      restApiName: "GithubReposApi",
+    });
+
+    const apiGithub = api.root.addResource("api");
+    const proxyResource = new ProxyResource(this, "DELGithubReposProxy", {
+      parent: apiGithub,
+      anyMethod: false,
+    });
+
+    proxyResource.addMethod(
+      "GET",
+      new HttpIntegration(
+        `http://${sbApp.loadBalancer.loadBalancerDnsName}/api/{proxy}`,
+        {
+          proxy: true,
+          httpMethod: "GET",
+          options: {
+            requestParameters: {
+              "integration.request.path.proxy": "method.request.path.proxy",
+            },
+          },
+        }
+      ),
+      {
+        requestParameters: {
+          "method.request.path.proxy": true,
+        },
+      }
+    );
+
+    new cdk.CfnOutput(this, "GithubReposApiUrl", {
+      value: api.url,
+    });
   }
 }
