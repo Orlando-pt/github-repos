@@ -40,16 +40,15 @@ I tested the service layer using **unit tests** available at
 The main purpose of these tests is to check if the service logic is working as expected. It is using
 **Mockito** to mock the response from the *GitHub client* and also **JUnit** to run the tests.
 In terms of **integration tests**, I created the test class
-[RepositoryControllerTest.kt](./src/test/kotlin/com/tui/githubrepos/controller/RepositoryControllerTest.kt)
+[RepositoryControllerTestIT.kt](./src/test/kotlin/com/tui/githubrepos/controller/RepositoryControllerTestIT.kt)
 that is responsible for loading the whole application and test the endpoint. It has one test
 because I only wanted to see if the endpoint was working with my own GitHub profile.
 It was pointless to test error handling in the previous tests because, for example, it's a huge
 gamble to put a GitHub username that doesn't exist, today it doesn't exist, but tomorrow is another day.
 So, in cases like these, I mock the service and test the error handling in the controller.
-Simple enough, but this time I was spending a little too much time building the class, for some
-reason it was not compiling. Either way, the idea is in the file
-[RepositoryControllerMockTest.kt](./src/test/kotlin/com/tui/githubrepos/controller/RepositoryControllerMockTest.kt).
-The premise of the tests was created, it lacks the implementation.
+That is what we can see in the file
+[RepositoryControllerMockTestIT.kt](./src/test/kotlin/com/tui/githubrepos/controller/RepositoryControllerMockTestIT.kt).
+Here I mock the service and test error handling at the controller level.
 
 Normally I have two different *gradle tasks* to run the tests, one for unit tests and another for
 integration tests. But this time, to simplify, it's only one task.
@@ -192,8 +191,6 @@ And then the Fargate service with the ALB.
 );
 ```
 
-[//]: # (TODO: remove the publicLoadBalancer)
-
 Lastly, I just created the Rest Api Gateway to connect to the ALB and expose the application.
 
 ```typescript
@@ -277,4 +274,3 @@ and use it to customize the API Gateway.
 I had a lot of fun doing this challenge. I hope it causes good impressions, and if it doesn't, I
 appreciate the opportunity to do it. Bye, have a good day!
 
-[//]: # (change localhost to deployment url TODO)

@@ -45,7 +45,7 @@ class GithubClient(
             throw ResourceNotFoundException("Username not found: $username")
         }
         .onStatus({ status -> status.isError }) {
-            throw HttpClientException("Error getting repositories for username: $username", it.statusCode().value())
+            throw HttpClientException("Error fetching repositories for username: $username", it.statusCode().value())
         }
         .bodyToFlux(Repository::class.java)
 
@@ -60,10 +60,13 @@ class GithubClient(
         .uri("/repos/$owner/$repository/branches")
         .retrieve()
         .onStatus({ status -> status == HttpStatus.NOT_FOUND }) {
+            // this should log that it was not possible to find the repository
+            // and return nothing
             throw ResourceNotFoundException("Repository not found: $repository")
         }
         .onStatus({ status -> status.isError }) {
-            throw HttpClientException("Error getting branches for repository: $repository", it.statusCode().value())
+            // the same as above
+            throw HttpClientException("Error fetching branches for repository: $repository", it.statusCode().value())
         }
         .bodyToFlux(Branch::class.java)
 

@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment
 import org.springframework.boot.test.web.client.TestRestTemplate
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-class RepositoryControllerTest {
+class RepositoryControllerTestIT {
     @Autowired
     private lateinit var testRestTemplate: TestRestTemplate
 
