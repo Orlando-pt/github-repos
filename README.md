@@ -3,7 +3,7 @@
 Hi! In this file you will find the most important information about the challenge resolution.
 You can also check the challenge solution in the following link:
 
-https://jiy9lg7dm8.execute-api.eu-central-1.amazonaws.com/prod/api/repository/ThePrimeagen
+https://jq42r9ui4b.execute-api.eu-central-1.amazonaws.com/api/repository/ThePrimeagen
 
 ## Chosen technologies
 
@@ -86,7 +86,7 @@ message was okay enough. I know the implications of having different formatted r
 specially for the ones consuming the API, it's not good, and I would never deliver it like this.
 
 ```shell
-$ curl -H "Accept: application/xml" https://jiy9lg7dm8.execute-api.eu-central-1.amazonaws.com/prod/api/repository/JohnDoe
+$ curl -H "Accept: application/xml" https://jq42r9ui4b.execute-api.eu-central-1.amazonaws.com/api/repository/JohnDoe
 ```
 
 ```json
@@ -119,7 +119,7 @@ This automatic generation can be useful later if we want to customize the **API 
 With the swagger file we know exactly which endpoints we have and what are the expected responses.
 
 Swagger also has a **UI** component that we can find in the following
-[link](http://github-githu-ue6exdlr2eyb-773707930.eu-central-1.elb.amazonaws.com/api/webjars/swagger-ui/index.html).
+[link](https://jq42r9ui4b.execute-api.eu-central-1.amazonaws.com/api/webjars/swagger-ui/index.html).
 It's also generated automatically when running the application.
 
 ---
@@ -149,27 +149,28 @@ stack file [infra-stack.ts](./infra/lib/infra-stack.ts).
 I started by creating the VPC.
 
 ```typescript
-const vpc = new Vpc(this, "GithubReposVpc", {
+const vpc = new Vpc(this, getNameWithEnv("GithubReposVpc"), {
     maxAzs: 2,
     natGateways: 1,
+    restrictDefaultSecurityGroup: false,
 });
 ```
 
 Followed by the ECS cluster.
 
 ```typescript
-const appCluster = new ecs.Cluster(this, "GithubReposEcs", {
+const appCluster = new ecs.Cluster(this, getNameWithEnv("GithubReposEcs"), {
     vpc: vpc,
-    clusterName: "GithubReposCluster",
+    clusterName: getNameWithEnv("GithubReposCluster"),
 });
 ```
 
 And then the Fargate service with the ALB.
 
 ```typescript
-    const sbApp = new ApplicationLoadBalancedFargateService(
+const sbApp = new ApplicationLoadBalancedFargateService(
     this,
-    "GithubReposApp",
+    getNameWithEnv("GithubReposApp"),
     {
         cluster: appCluster,
         desiredCount: 1,
@@ -185,8 +186,8 @@ And then the Fargate service with the ALB.
                 ),
             },
         },
-        assignPublicIp: true,
-        publicLoadBalancer: true,
+        assignPublicIp: false,
+        publicLoadBalancer: false,
     }
 );
 ```
@@ -194,36 +195,16 @@ And then the Fargate service with the ALB.
 Lastly, I just created the Rest Api Gateway to connect to the ALB and expose the application.
 
 ```typescript
-const api = new RestApi(this, "GithubReposApi", {
-    restApiName: "GithubReposApi",
-});
+const api = new HttpApi(this, getNameWithEnv("GithubReposApi"));
 
-const apiGithub = api.root.addResource("api");
-const proxyResource = new ProxyResource(this, "DELGithubReposProxy", {
-    parent: apiGithub,
-    anyMethod: false,
-});
-
-proxyResource.addMethod(
-    "GET",
-    new HttpIntegration(
-        `http://${sbApp.loadBalancer.loadBalancerDnsName}/api/{proxy}`,
-        {
-            proxy: true,
-            httpMethod: "GET",
-            options: {
-                requestParameters: {
-                    "integration.request.path.proxy": "method.request.path.proxy",
-                },
-            },
-        }
+api.addRoutes({
+    path: "/{proxy+}",
+    methods: [HttpMethod.ANY],
+    integration: new HttpAlbIntegration(
+        getNameWithEnv("GithubReposAppIntegration"),
+        sbApp.listener
     ),
-    {
-        requestParameters: {
-            "method.request.path.proxy": true,
-        },
-    }
-);
+});
 ```
 
 ## Jenkins
