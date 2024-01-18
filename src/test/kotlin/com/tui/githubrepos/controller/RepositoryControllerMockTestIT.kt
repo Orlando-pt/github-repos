@@ -48,24 +48,6 @@ class RepositoryControllerMockTestIT {
     }
 
     @Test
-    fun `Should get 406 response when the media type is not supported`() {
-        val username = "Orlando-pt"
-        runBlocking {
-            webClient.get()
-                .uri("/repository/$username")
-                .accept(MediaType.APPLICATION_XML)
-                .exchange()
-                .expectStatus().isEqualTo(406)
-                .expectBody()
-                .jsonPath("status").isEqualTo(406)
-                .jsonPath("error").isEqualTo("Not Acceptable")
-                .jsonPath("path").isEqualTo("/repository/$username")
-
-            Mockito.verify(repositoryService, Mockito.times(0)).getAllRepositories(username)
-        }
-    }
-
-    @Test
     fun `Should get an error response when an unexpected error occurs fetching repositories from the GitHub API`() {
         val username = "Orlando-pt"
         val errorMessage = "Error fetching repositories for username: $username"
@@ -86,47 +68,21 @@ class RepositoryControllerMockTestIT {
         }
     }
 
-    // This two tests should not exist, when fetching the branches for a repository
-    // if they do not exist, the application should keep going and return the repositories with valid branches
     @Test
-    fun `Should get 404 response when a repository does not exist on GitHub`() {
+    fun `Should get 406 response when the media type is not supported`() {
         val username = "Orlando-pt"
-        val repositoryName = "Lord-of-the-Code"
-
         runBlocking {
-            Mockito.`when`(repositoryService.getAllRepositories(username)).thenThrow(
-                ResourceNotFoundException("Repository not found: $repositoryName")
-            )
             webClient.get()
                 .uri("/repository/$username")
+                .accept(MediaType.APPLICATION_XML)
                 .exchange()
-                .expectStatus().isNotFound
+                .expectStatus().isEqualTo(406)
                 .expectBody()
-                .jsonPath("status").isEqualTo(404)
-                .jsonPath("message").isEqualTo("Repository not found: $repositoryName")
+                .jsonPath("status").isEqualTo(406)
+                .jsonPath("error").isEqualTo("Not Acceptable")
+                .jsonPath("path").isEqualTo("/repository/$username")
 
-            Mockito.verify(repositoryService, Mockito.times(1)).getAllRepositories(username)
-        }
-    }
-
-    @Test
-    fun `Should get an error response when an unexpected error occurs fetching branches from the GitHub API`() {
-        val username = "Orlando-pt"
-        val errorMessage = "Error fetching branches for repository: Lord-of-the-Code"
-
-        runBlocking {
-            Mockito.`when`(repositoryService.getAllRepositories(username)).thenThrow(
-                HttpClientException(errorMessage, 400)
-            )
-            webClient.get()
-                .uri("/repository/$username")
-                .exchange()
-                .expectStatus().isBadRequest
-                .expectBody()
-                .jsonPath("status").isEqualTo(400)
-                .jsonPath("message").isEqualTo(errorMessage)
-
-            Mockito.verify(repositoryService, Mockito.times(1)).getAllRepositories(username)
+            Mockito.verify(repositoryService, Mockito.times(0)).getAllRepositories(username)
         }
     }
 }

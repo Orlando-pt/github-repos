@@ -6,6 +6,7 @@ import kotlinx.coroutines.reactive.awaitSingle
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 
 /**
  * Service to get information on GitHub repositories
@@ -33,6 +34,10 @@ class RepositoryService(
                         repository.owner.login,
                         repository.name
                     )
+                    .onErrorResume {
+                        // Fail silently if we can't get branches for a repository
+                        Flux.empty()
+                    }
                     .collectList()
                     .map {
                         repository.branches = it

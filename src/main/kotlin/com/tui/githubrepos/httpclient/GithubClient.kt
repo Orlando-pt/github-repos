@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 
 @Component
 class GithubClient(
@@ -45,6 +46,9 @@ class GithubClient(
             throw ResourceNotFoundException("Username not found: $username")
         }
         .onStatus({ status -> status.isError }) {
+            it.bodyToMono(String::class.java).let { body ->
+                log.error("Error fetching repositories for username: $username. Response body: $body")
+            }
             throw HttpClientException("Error fetching repositories for username: $username", it.statusCode().value())
         }
         .bodyToFlux(Repository::class.java)
@@ -59,14 +63,17 @@ class GithubClient(
         .get()
         .uri("/repos/$owner/$repository/branches")
         .retrieve()
-        .onStatus({ status -> status == HttpStatus.NOT_FOUND }) {
-            // this should log that it was not possible to find the repository
-            // and return nothing
-            throw ResourceNotFoundException("Repository not found: $repository")
-        }
         .onStatus({ status -> status.isError }) {
-            // the same as above
-            throw HttpClientException("Error fetching branches for repository: $repository", it.statusCode().value())
+            it.bodyToMono(String::class.java).let { body ->
+                log.error("Error fetching branches for repository: '$owner/$repository'. Response body: $body")
+            }
+
+            Mono.error(
+                HttpClientException(
+                    "Error fetching branches for repository: '$owner/$repository'",
+                    it.statusCode().value()
+                )
+            )
         }
         .bodyToFlux(Branch::class.java)
 
