@@ -23,7 +23,7 @@ class RepositoryController(
      * @return List of repositories
      */
     @GetMapping("/{username}", produces = [MediaType.APPLICATION_JSON_VALUE])
-    suspend fun getAllRepositories(
+    suspend fun getRepositoriesForUsername(
         @PathVariable username: String
     ): List<Repository> {
         return repositoryService.getRepositories(username)

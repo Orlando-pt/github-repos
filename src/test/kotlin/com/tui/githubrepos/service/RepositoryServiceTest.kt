@@ -14,7 +14,6 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import reactor.core.publisher.Flux
 
 @ExtendWith(SpringExtension::class)
 class RepositoryServiceTest {
@@ -44,15 +43,15 @@ class RepositoryServiceTest {
     @Test
     fun `Should only get not forked repositories when user exists`() {
         val forkedRepo = repo1.copy(fork = true)
-        Mockito.`when`(githubClient.getAllRepositories(repo1.owner.login)).thenReturn(
-            Flux.just(forkedRepo, repo2)
-        )
-
-        Mockito.`when`(githubClient.getAllRepositoryBranches(repo2.owner.login, repo2.name)).thenReturn(
-            Flux.empty()
-        )
-
         runBlocking {
+            Mockito.`when`(githubClient.getAllRepositories(repo1.owner.login)).thenReturn(
+                listOf(forkedRepo, repo2)
+            )
+
+            Mockito.`when`(githubClient.getAllRepositoryBranches(repo2.owner.login, repo2.name)).thenReturn(
+                listOf()
+            )
+
             val result = repositoryService.getRepositories("username")
             Assertions.assertEquals(1, result.size)
             Assertions.assertEquals("username", result[0].owner.login)
@@ -71,9 +70,9 @@ class RepositoryServiceTest {
 
     @Test
     fun `Should get empty list when user has no repositories`() {
-        Mockito.`when`(githubClient.getAllRepositories("username")).thenReturn(Flux.empty())
-
         runBlocking {
+            Mockito.`when`(githubClient.getAllRepositories("username")).thenReturn(listOf())
+
             val result = repositoryService.getRepositories("username")
             Assertions.assertTrue(result.isEmpty())
 
@@ -83,18 +82,18 @@ class RepositoryServiceTest {
 
     @Test
     fun `Should get repositories with empty list of branches when it was just created`() {
-        Mockito.`when`(githubClient.getAllRepositories("username")).thenReturn(
-            Flux.just(repo1, repo2)
-        )
-
-        Mockito.`when`(githubClient.getAllRepositoryBranches(repo1.owner.login, repo1.name)).thenReturn(
-            Flux.empty()
-        )
-        Mockito.`when`(githubClient.getAllRepositoryBranches(repo2.owner.login, repo2.name)).thenReturn(
-            Flux.empty()
-        )
-
         runBlocking {
+            Mockito.`when`(githubClient.getAllRepositories("username")).thenReturn(
+                listOf(repo1, repo2)
+            )
+
+            Mockito.`when`(githubClient.getAllRepositoryBranches(repo1.owner.login, repo1.name)).thenReturn(
+                listOf()
+            )
+            Mockito.`when`(githubClient.getAllRepositoryBranches(repo2.owner.login, repo2.name)).thenReturn(
+                listOf()
+            )
+
             val result = repositoryService.getRepositories("username")
             Assertions.assertEquals(2, result.size)
             Assertions.assertTrue(result[0].branches.isEmpty())
@@ -117,18 +116,18 @@ class RepositoryServiceTest {
         val repoWithBranches = repo1.copy(
             branches = listOf(Branch("branch1", Commit("sha")), Branch("branch2", Commit("sha")))
         )
-        Mockito.`when`(githubClient.getAllRepositories("username")).thenReturn(
-            Flux.just(repo1, repo2)
-        )
-
-        Mockito.`when`(githubClient.getAllRepositoryBranches(repo1.owner.login, repo1.name)).thenReturn(
-            Flux.empty()
-        )
-        Mockito.`when`(githubClient.getAllRepositoryBranches(repo2.owner.login, repo2.name)).thenReturn(
-            Flux.just(Branch("branch1", Commit("sha")), Branch("branch2", Commit("sha")))
-        )
-
         runBlocking {
+            Mockito.`when`(githubClient.getAllRepositories("username")).thenReturn(
+                listOf(repo1, repo2)
+            )
+
+            Mockito.`when`(githubClient.getAllRepositoryBranches(repo1.owner.login, repo1.name)).thenReturn(
+                listOf()
+            )
+            Mockito.`when`(githubClient.getAllRepositoryBranches(repo2.owner.login, repo2.name)).thenReturn(
+                listOf(Branch("branch1", Commit("sha")), Branch("branch2", Commit("sha")))
+            )
+
             val result = repositoryService.getRepositories("username")
             Assertions.assertEquals(2, result.size)
             Assertions.assertEquals(0, result[0].branches.size)
@@ -154,23 +153,21 @@ class RepositoryServiceTest {
             branches = listOf(Branch("branch1", Commit("sha")), Branch("branch2", Commit("sha")))
         )
 
-        Mockito.`when`(githubClient.getAllRepositories("username")).thenReturn(
-            Flux.just(repo1, repo2)
-        )
+        runBlocking {
+            Mockito.`when`(githubClient.getAllRepositories("username")).thenReturn(
+                listOf(repo1, repo2)
+            )
 
-        Mockito.`when`(githubClient.getAllRepositoryBranches(repo1.owner.login, repo1.name)).thenReturn(
-            Flux.error(
+            Mockito.`when`(githubClient.getAllRepositoryBranches(repo1.owner.login, repo1.name)).thenThrow(
                 HttpClientException(
-                    "Error fetching branches for repository: '${repo1.owner.login}/$repo1.name'",
+                    "Error fetching branches for repository: '${repo1.owner.login}/${repo1.name}'",
                     404
                 )
             )
-        )
-        Mockito.`when`(githubClient.getAllRepositoryBranches(repo2.owner.login, repo2.name)).thenReturn(
-            Flux.just(Branch("branch1", Commit("sha")), Branch("branch2", Commit("sha")))
-        )
+            Mockito.`when`(githubClient.getAllRepositoryBranches(repo2.owner.login, repo2.name)).thenReturn(
+                listOf(Branch("branch1", Commit("sha")), Branch("branch2", Commit("sha")))
+            )
 
-        runBlocking {
             val result = repositoryService.getRepositories("username")
             Assertions.assertEquals(2, result.size)
             Assertions.assertEquals(0, result[0].branches.size)
