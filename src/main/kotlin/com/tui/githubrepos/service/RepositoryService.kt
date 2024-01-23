@@ -2,11 +2,15 @@ package com.tui.githubrepos.service
 
 import com.tui.githubrepos.dto.Repository
 import com.tui.githubrepos.httpclient.GithubClient
-import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Flux
 
 /**
  * Service to get information on GitHub repositories
@@ -22,35 +26,26 @@ class RepositoryService(
      * @param username GitHub username
      * @return List of repositories
      */
-    suspend fun getAllRepositories(username: String): List<Repository> {
-        val createdRepositories = githubClient
-            .getAllRepositories(username)
-            .filter {
-                !it.fork
+    suspend fun getAllRepositories(username: String): List<Repository> = coroutineScope {
+
+        val repositories = async { githubClient.getAllRepositories(username) }.await()
+
+        val originalRepositories = repositories.filter { !it.fork }
+
+        log.info("Found ${originalRepositories.size} repositories for username: $username")
+
+        originalRepositories.asFlow().map { repository ->
+            async {
+                githubClient.getAllRepositoryBranches(
+                    repository.owner.login,
+                    repository.name
+                ).let {
+                    repository.branches = it
+                }
+
+                repository
             }
-            .flatMap { repository ->
-                githubClient
-                    .getAllRepositoryBranches(
-                        repository.owner.login,
-                        repository.name
-                    )
-                    .onErrorResume {
-                        // Fail silently if we can't get branches for a repository
-                        Flux.empty()
-                    }
-                    .collectList()
-                    .map {
-                        repository.branches = it
-                        repository
-                    }
-            }
-            .collectList()
-            .awaitSingle()
-            .orEmpty()
-
-        log.info("Found ${createdRepositories.size} repositories for username: $username")
-
-        return createdRepositories
-
+        }.toList().awaitAll()
     }
+
 }

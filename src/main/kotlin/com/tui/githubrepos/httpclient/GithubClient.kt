@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import reactor.core.publisher.Mono
+import org.springframework.web.reactive.function.client.awaitBodyOrNull
 
 @Component
 class GithubClient(
@@ -38,7 +38,7 @@ class GithubClient(
      * @param username GitHub username
      * @return List of repositories
      */
-    fun getAllRepositories(username: String) = client
+    suspend fun getAllRepositories(username: String) = client
         .get()
         .uri("/users/$username/repos")
         .retrieve()
@@ -49,9 +49,13 @@ class GithubClient(
             it.bodyToMono(String::class.java).let { body ->
                 log.error("Error fetching repositories for username: $username. Response body: $body")
             }
-            throw HttpClientException("Error fetching repositories for username: $username", it.statusCode().value())
+
+            throw HttpClientException(
+                "Error fetching repositories for username: $username",
+                it.statusCode().value()
+            )
         }
-        .bodyToFlux(Repository::class.java)
+        .awaitBodyOrNull<List<Repository>>() ?: emptyList()
 
     /**
      * Fetch all branches for a given repository
@@ -59,7 +63,7 @@ class GithubClient(
      * @param repository Repository name
      * @return List of branches
      */
-    fun getAllRepositoryBranches(owner: String, repository: String) = client
+    suspend fun getAllRepositoryBranches(owner: String, repository: String) = client
         .get()
         .uri("/repos/$owner/$repository/branches")
         .retrieve()
@@ -68,14 +72,12 @@ class GithubClient(
                 log.error("Error fetching branches for repository: '$owner/$repository'. Response body: $body")
             }
 
-            Mono.error(
-                HttpClientException(
-                    "Error fetching branches for repository: '$owner/$repository'",
-                    it.statusCode().value()
-                )
+            throw HttpClientException(
+                "Error fetching branches for repository: '$owner/$repository'",
+                it.statusCode().value()
             )
         }
-        .bodyToFlux(Branch::class.java)
+        .awaitBodyOrNull<List<Branch>>() ?: emptyList()
 
     /**
      * Get necessary headers for GitHub API requests
