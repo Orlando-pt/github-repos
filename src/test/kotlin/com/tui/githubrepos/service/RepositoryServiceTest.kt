@@ -53,7 +53,7 @@ class RepositoryServiceTest {
         )
 
         runBlocking {
-            val result = repositoryService.getAllRepositories("username")
+            val result = repositoryService.getRepositories("username")
             Assertions.assertEquals(1, result.size)
             Assertions.assertEquals("username", result[0].owner.login)
 
@@ -74,7 +74,7 @@ class RepositoryServiceTest {
         Mockito.`when`(githubClient.getAllRepositories("username")).thenReturn(Flux.empty())
 
         runBlocking {
-            val result = repositoryService.getAllRepositories("username")
+            val result = repositoryService.getRepositories("username")
             Assertions.assertTrue(result.isEmpty())
 
             Mockito.verify(githubClient, Mockito.times(1)).getAllRepositories("username")
@@ -95,7 +95,7 @@ class RepositoryServiceTest {
         )
 
         runBlocking {
-            val result = repositoryService.getAllRepositories("username")
+            val result = repositoryService.getRepositories("username")
             Assertions.assertEquals(2, result.size)
             Assertions.assertTrue(result[0].branches.isEmpty())
             Assertions.assertTrue(result[1].branches.isEmpty())
@@ -129,7 +129,7 @@ class RepositoryServiceTest {
         )
 
         runBlocking {
-            val result = repositoryService.getAllRepositories("username")
+            val result = repositoryService.getRepositories("username")
             Assertions.assertEquals(2, result.size)
             Assertions.assertEquals(0, result[0].branches.size)
             Assertions.assertEquals(2, result[1].branches.size)
@@ -171,7 +171,7 @@ class RepositoryServiceTest {
         )
 
         runBlocking {
-            val result = repositoryService.getAllRepositories("username")
+            val result = repositoryService.getRepositories("username")
             Assertions.assertEquals(2, result.size)
             Assertions.assertEquals(0, result[0].branches.size)
             Assertions.assertEquals(2, result[1].branches.size)

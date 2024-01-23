@@ -26,6 +26,6 @@ class RepositoryController(
     suspend fun getAllRepositories(
         @PathVariable username: String
     ): List<Repository> {
-        return repositoryService.getAllRepositories(username)
+        return repositoryService.getRepositories(username)
     }
 }

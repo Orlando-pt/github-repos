@@ -26,7 +26,7 @@ class RepositoryService(
      * @param username GitHub username
      * @return List of repositories
      */
-    suspend fun getAllRepositories(username: String): List<Repository> = coroutineScope {
+    suspend fun getRepositories(username: String): List<Repository> = coroutineScope {
 
         val repositories = async { githubClient.getAllRepositories(username) }.await()
 

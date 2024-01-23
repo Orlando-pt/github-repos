@@ -32,7 +32,7 @@ class RepositoryControllerMockTestIT {
         val username = "Orlando-pt"
 
         runBlocking {
-            Mockito.`when`(repositoryService.getAllRepositories(username)).thenThrow(
+            Mockito.`when`(repositoryService.getRepositories(username)).thenThrow(
                 ResourceNotFoundException("Username not found: $username")
             )
             webClient.get()
@@ -43,7 +43,7 @@ class RepositoryControllerMockTestIT {
                 .jsonPath("status").isEqualTo(404)
                 .jsonPath("message").isEqualTo("Username not found: $username")
 
-            Mockito.verify(repositoryService, Mockito.times(1)).getAllRepositories(username)
+            Mockito.verify(repositoryService, Mockito.times(1)).getRepositories(username)
         }
     }
 
@@ -53,7 +53,7 @@ class RepositoryControllerMockTestIT {
         val errorMessage = "Error fetching repositories for username: $username"
 
         runBlocking {
-            Mockito.`when`(repositoryService.getAllRepositories(username)).thenThrow(
+            Mockito.`when`(repositoryService.getRepositories(username)).thenThrow(
                 HttpClientException(errorMessage, 401)
             )
             webClient.get()
@@ -64,7 +64,7 @@ class RepositoryControllerMockTestIT {
                 .jsonPath("status").isEqualTo(401)
                 .jsonPath("message").isEqualTo(errorMessage)
 
-            Mockito.verify(repositoryService, Mockito.times(1)).getAllRepositories(username)
+            Mockito.verify(repositoryService, Mockito.times(1)).getRepositories(username)
         }
     }
 
@@ -82,7 +82,7 @@ class RepositoryControllerMockTestIT {
                 .jsonPath("error").isEqualTo("Not Acceptable")
                 .jsonPath("path").isEqualTo("/repository/$username")
 
-            Mockito.verify(repositoryService, Mockito.times(0)).getAllRepositories(username)
+            Mockito.verify(repositoryService, Mockito.times(0)).getRepositories(username)
         }
     }
 }
