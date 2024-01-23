@@ -1,7 +1,6 @@
 package com.tui.githubrepos.service
 
 import com.tui.githubrepos.dto.Repository
-import com.tui.githubrepos.exception.HttpClientException
 import com.tui.githubrepos.httpclient.GithubClient
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -37,15 +36,11 @@ class RepositoryService(
 
         originalRepositories.asFlow().map { repository ->
             async {
-                try {
-                    githubClient.getAllRepositoryBranches(
-                        repository.owner.login,
-                        repository.name
-                    ).let {
-                        repository.branches = it
-                    }
-                } catch (e: HttpClientException) {
-                    // Fail silently when fetching branches for a repository fails
+                githubClient.getAllRepositoryBranches(
+                    repository.owner.login,
+                    repository.name
+                ).let {
+                    repository.branches = it
                 }
 
                 repository

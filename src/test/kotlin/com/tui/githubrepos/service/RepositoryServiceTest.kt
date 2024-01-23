@@ -4,7 +4,6 @@ import com.tui.githubrepos.dto.Branch
 import com.tui.githubrepos.dto.Commit
 import com.tui.githubrepos.dto.Owner
 import com.tui.githubrepos.dto.Repository
-import com.tui.githubrepos.exception.HttpClientException
 import com.tui.githubrepos.httpclient.GithubClient
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
@@ -158,11 +157,8 @@ class RepositoryServiceTest {
                 listOf(repo1, repo2)
             )
 
-            Mockito.`when`(githubClient.getAllRepositoryBranches(repo1.owner.login, repo1.name)).thenThrow(
-                HttpClientException(
-                    "Error fetching branches for repository: '${repo1.owner.login}/${repo1.name}'",
-                    404
-                )
+            Mockito.`when`(githubClient.getAllRepositoryBranches(repo1.owner.login, repo1.name)).thenReturn(
+                emptyList()
             )
             Mockito.`when`(githubClient.getAllRepositoryBranches(repo2.owner.login, repo2.name)).thenReturn(
                 listOf(Branch("branch1", Commit("sha")), Branch("branch2", Commit("sha")))

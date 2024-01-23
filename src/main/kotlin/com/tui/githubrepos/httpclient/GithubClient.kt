@@ -17,7 +17,6 @@ class GithubClient(
 ) {
     private val log: Logger = LoggerFactory.getLogger(GithubClient::class.java)
 
-
     /**
      * Fetch all repositories from GitHub for a given username
      * @param username GitHub username
@@ -57,10 +56,8 @@ class GithubClient(
                 log.error("Error fetching branches for repository: '$owner/$repository'. Response body: $body")
             }
 
-            throw HttpClientException(
-                "Error fetching branches for repository: '$owner/$repository'",
-                it.statusCode().value()
-            )
+            // Fail silently when fetching branches for a repository fails
+            null
         }
         .awaitBodyOrNull<List<Branch>>() ?: emptyList()
 }
