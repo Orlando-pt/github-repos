@@ -6,32 +6,17 @@ import com.tui.githubrepos.exception.HttpClientException
 import com.tui.githubrepos.exception.ResourceNotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBodyOrNull
 
 @Component
 class GithubClient(
-    @Value("\${github.url}")
-    private val githubUrl: String,
-
-    @Value("\${github.token}")
-    private val githubToken: String
+    private val client: WebClient
 ) {
     private val log: Logger = LoggerFactory.getLogger(GithubClient::class.java)
 
-    /**
-     * Custom WebClient to make requests to GitHub API
-     * @return WebClient
-     */
-    private val client = WebClient.builder()
-        .baseUrl(githubUrl)
-        .defaultHeaders { headers -> headers.addAll(getHeaders()) }
-        .build()
 
     /**
      * Fetch all repositories from GitHub for a given username
@@ -78,14 +63,4 @@ class GithubClient(
             )
         }
         .awaitBodyOrNull<List<Branch>>() ?: emptyList()
-
-    /**
-     * Get necessary headers for GitHub API requests
-     * @return HttpHeaders
-     */
-    private fun getHeaders() = HttpHeaders().apply {
-        set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-        set(HttpHeaders.AUTHORIZATION, "bearer $githubToken")
-        set("X-GitHub-Api-Version", "2022-11-28")
-    }
 }
