@@ -1,5 +1,9 @@
 package com.tui.githubrepos.controller
 
+import com.tui.githubrepos.dto.Branch
+import com.tui.githubrepos.dto.Commit
+import com.tui.githubrepos.dto.Owner
+import com.tui.githubrepos.dto.Repository
 import com.tui.githubrepos.exception.HttpClientException
 import com.tui.githubrepos.exception.ResourceNotFoundException
 import com.tui.githubrepos.service.RepositoryService
@@ -26,6 +30,54 @@ class RepositoryControllerMockTestIT {
 
     @Autowired
     private lateinit var webClient: WebTestClient
+
+    private val repository = Repository(
+        name = "repo1",
+        owner = Owner(
+            login = "username"
+        ),
+        branches = listOf(
+            Branch(
+                name = "master",
+                commit = Commit(
+                    sha = "sha",
+                )
+            )
+
+        ),
+        fork = false
+    )
+
+    @Test
+    fun `Should get repositories when the username exists on GitHub`() {
+        val repositoryNoBranches = repository.copy(branches = listOf())
+
+        runBlocking {
+            Mockito.`when`(repositoryService.getRepositories(repository.owner.login)).thenReturn(
+                listOf(repository, repositoryNoBranches)
+            )
+
+            webClient.get()
+                .uri("/repository/${repository.owner.login}")
+                .exchange()
+                .expectStatus().isOk
+                .expectBody()
+                .jsonPath("size()").isEqualTo(2)
+                .jsonPath("$[0].name").isEqualTo(repository.name)
+                .jsonPath("$[0].owner.login").isEqualTo(repository.owner.login)
+                .jsonPath("$[0].branches.size()").isEqualTo(1)
+                .jsonPath("$[0].branches[0].name").isEqualTo(repository.branches[0].name)
+                .jsonPath("$[0].branches[0].commit.sha").isEqualTo(repository.branches[0].commit.sha)
+                .jsonPath("$[0].fork").doesNotExist()
+                .jsonPath("$[1].name").isEqualTo(repositoryNoBranches.name)
+                .jsonPath("$[1].owner.login").isEqualTo(repositoryNoBranches.owner.login)
+                .jsonPath("$[1].branches.size()").isEqualTo(0)
+                .jsonPath("$[1].branches[0].name").doesNotExist()
+                .jsonPath("$[1].fork").doesNotExist()
+
+            Mockito.verify(repositoryService, Mockito.times(1)).getRepositories(repository.owner.login)
+        }
+    }
 
     @Test
     fun `Should get 404 response when the username does not exist on GitHub`() {

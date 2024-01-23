@@ -30,7 +30,6 @@ export class InfraStack extends cdk.Stack {
     });
 
     // App Secrets Manager
-    // TODO: add env to jenkins
     const appSecrets = new Secret(this, getNameWithEnv("GithubReposSecrets"), {
       secretName: getNameWithEnv("app/github-repos"),
       secretObjectValue: {
