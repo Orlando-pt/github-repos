@@ -34,6 +34,11 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webflux-api
     testImplementation("org.springdoc:springdoc-openapi-starter-webflux-api:2.3.0")
 
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
 }
