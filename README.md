@@ -1,19 +1,19 @@
-# TUI Challenge
+# Reactive Challenge
 
-Hi! In this file you will find the most important information about the challenge resolution.
+Hi! In this file you will find the most important information about a challenge resolution described in
+this [file](./challenge.pdf).
 You can also check the challenge solution in the following link:
 
 https://jq42r9ui4b.execute-api.eu-central-1.amazonaws.com/api/repository/ThePrimeagen
 
 ## Chosen technologies
 
-I choose to use [Spring Webflux](https://www.baeldung.com/spring-webflux), which provides reactive programming support
-for web applications, and kotlin to implement this challenge. I
-created the Dockerfile
+I choose to use [Spring Webflux](https://www.baeldung.com/spring-webflux) and
+[Kotlin coroutines](https://kotlinlang.org/docs/coroutines-overview.html), which provides reactive programming
+support for web applications. I created the Dockerfile
 to build the docker image, sending it to the AWS ECR to be used by the ECS.
 The [Jenkinsfile](./Jenkinsfile) contains the description of the pipeline used to build, test and deploy
-the application to AWS. Note: I had Jenkins in an ec2 instance, but I had to forget about that
-because the instance didn't have enough memory to build the project, so I just installed locally.
+the application to AWS.
 
 ## Application Development
 
@@ -24,7 +24,7 @@ where we define the endpoint and pass the request to the service layer. The
 [RepositoryService.kt](./src/main/kotlin/com/tui/githubrepos/service/RepositoryService.kt) is then
 responsible for calling a GitHub client wrapper(
 [GithubClient.kt](./src/main/kotlin/com/tui/githubrepos/httpclient/GithubClient.kt)
-) that will call the GitHub API and retrieve the data. Webflux allows us to do this in a non-blocking
+) that will call the GitHub API and retrieve the data. **Coroutines** allows us to do this in a non-blocking
 way, so we can have better performance.
 
 To run the application locally, have in mind that you need to have a **GITHUB_TOKEN** to be able to
@@ -41,14 +41,12 @@ The main purpose of these tests is to check if the service logic is working as e
 **Mockito** to mock the response from the *GitHub client* and also **JUnit** to run the tests.
 In terms of **integration tests**, I created the test class
 [RepositoryControllerTestIT.kt](./src/test/kotlin/com/tui/githubrepos/controller/RepositoryControllerTestIT.kt)
-that is responsible for loading the whole application and test the endpoint. It has one test
-because I only wanted to see if the endpoint was working with my own GitHub profile.
-It was pointless to test error handling in the previous tests because, for example, it's a huge
-gamble to put a GitHub username that doesn't exist, today it doesn't exist, but tomorrow is another day.
-So, in cases like these, I mock the service and test the error handling in the controller.
-That is what we can see in the file
-[RepositoryControllerMockTestIT.kt](./src/test/kotlin/com/tui/githubrepos/controller/RepositoryControllerMockTestIT.kt).
-Here I mock the service and test error handling at the controller level.
+that is responsible for loading the whole application and test the endpoint.
+The **GitHub** Http api is mocked using
+[MockWebServer](https://github.com/square/okhttp/tree/master/mockwebserver) from **OkHttp**.
+In the file
+[RepositoryControllerMockTestIT.kt](./src/test/kotlin/com/tui/githubrepos/controller/RepositoryControllerMockTestIT.kt)
+I mock the service and test error handling at the controller level.
 
 Normally I have two different *gradle tasks* to run the tests, one for unit tests and another for
 integration tests. But this time, to simplify, it's only one task.
@@ -252,6 +250,6 @@ and use it to customize the API Gateway.
 
 ## Final considerations
 
-I had a lot of fun doing this challenge. I hope it causes good impressions, and if it doesn't, I
-appreciate the opportunity to do it. Bye, have a good day!
+I had a lot of fun doing this challenge. I hope you learned a little bit about me and my work.
+Bye, have a good day!
 
