@@ -2,9 +2,6 @@
 
 Hi! In this file you will find the most important information about a challenge resolution described in
 this [file](./challenge.pdf).
-You can also check the challenge solution in the following link:
-
-https://jq42r9ui4b.execute-api.eu-central-1.amazonaws.com/api/repository/ThePrimeagen
 
 ## Chosen technologies
 
@@ -84,7 +81,7 @@ message was okay enough. I know the implications of having different formatted r
 specially for the ones consuming the API, it's not good, and I would never deliver it like this.
 
 ```shell
-$ curl -H "Accept: application/xml" https://jq42r9ui4b.execute-api.eu-central-1.amazonaws.com/api/repository/JohnDoe
+$ curl -H "Accept: application/xml" https://.../api/repository/JohnDoe
 ```
 
 ```json
@@ -116,9 +113,8 @@ $ ./gradlew generateOpenApiDocs
 This automatic generation can be useful later if we want to customize the **API Gateway**.
 With the swagger file we know exactly which endpoints we have and what are the expected responses.
 
-Swagger also has a **UI** component that we can find in the following
-[link](https://jq42r9ui4b.execute-api.eu-central-1.amazonaws.com/api/webjars/swagger-ui/index.html).
-It's also generated automatically when running the application.
+Swagger also has a **UI** component that we can find after
+generating it automatically, when running the application.
 
 ---
 
